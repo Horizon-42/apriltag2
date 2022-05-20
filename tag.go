@@ -78,3 +78,12 @@ func (a *AprilTag) Empty() bool {
 func (a *AprilTag) SetDetected(detected bool) {
 	a.detected = detected
 }
+
+func (a *AprilTag) SetPoint3d(id int) {
+	// 公式计算3d点坐标
+	pt := a.Corners[id]
+	if pt == nil {
+		return
+	}
+
+}
