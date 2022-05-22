@@ -21,6 +21,7 @@ func TestTagDetector_DetectAprilTags(t *testing.T) {
 		if ok := capture.Read(&frame); ok {
 			a := td.DetectAprilTags(frame, true)
 			if !a.Empty() {
+				a.SetAll3dPoints()
 				log.Printf("%v", a.Corners)
 			}
 			win.IMShow(frame)

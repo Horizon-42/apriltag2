@@ -94,6 +94,13 @@ bool TagDetector::DetectTags(const cv::Mat &frame, cv::Mat &points, cv::Mat &ids
             for (int i = 0; i < detections.size(); ++i) {
                 cv::circle(frame, {int(detections[i].cxy.first), int(detections[i].cxy.second)}, 3,
                            {0, 255, 0}, -1);
+                cv::circle(frame, {int(detections[i].p[0].first), int(detections[i].p[0].second)}, 3,
+                                                      {255, 0, 0}, -1);
+                cv::circle(frame, {int(detections[i].p[1].first), int(detections[i].p[1].second)}, 3,
+                                           {0, 255, 0}, -1);
+                cv::circle(frame, {int(detections[i].p[2].first), int(detections[i].p[2].second)}, 3,
+                                                                      {0, 0, 255}, -1);
+
                 cv::putText(frame, to_string(detections[i].id),
                             {int(detections[i].p[0].first), int(detections[i].p[0].second)}, 0,
                             .5, {0, 0, 255});
