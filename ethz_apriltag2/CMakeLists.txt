@@ -13,7 +13,7 @@ project(ethz_apriltag2)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/)
 
-find_package(Eigen3)
+find_package(Eigen3 PATHS "C:/tools/Eigen3/share/eigen3/cmake")
 if (EIGEN3_FOUND)
     INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
     ADD_DEFINITIONS(${EIGEN3_DEFINITIONS} -D_USE_EIGEN)

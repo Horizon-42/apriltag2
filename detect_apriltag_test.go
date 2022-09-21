@@ -20,8 +20,20 @@ func TestTagDetector_DetectAprilTags(t *testing.T) {
 	for {
 		if ok := capture.Read(&frame); ok {
 			a := td.DetectAprilTags(frame, true)
+			a.Origin = gocv.Point3f{
+				X: 1,
+				Y: 1,
+				Z: 1,
+			}
+			a.P = gocv.Point3f{
+				X: 1.3,
+				Y: 1.4,
+				Z: 1,
+			}
 			if !a.Empty() {
 				a.SetAll3dPoints()
+				log.Printf("%v", a.Corners)
+				a.SetWorld3dPoints()
 				log.Printf("%v", a.Corners)
 			}
 			win.IMShow(frame)

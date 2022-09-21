@@ -102,25 +102,25 @@ func (a *AprilTag) SetPoint3d(id int) {
 	pt.points3d[0] = gocv.Point3f{
 		X: col*(a.config.TagSize*(1+a.config.TagSpacing)) + a.config.TagSize*a.config.TagSpacing,
 		Y: row*(a.config.TagSize*(1+a.config.TagSpacing)) + a.config.TagSize*a.config.TagSpacing,
-		Z: 0,
+		Z: a.Origin.Z,
 	}
 
 	pt.points3d[1] = gocv.Point3f{
 		X: pt.points3d[0].X + a.config.TagSize,
 		Y: pt.points3d[0].Y,
-		Z: 0,
+		Z: a.Origin.Z,
 	}
 
 	pt.points3d[2] = gocv.Point3f{
 		X: pt.points3d[1].X,
 		Y: pt.points3d[1].Y + a.config.TagSize,
-		Z: 0,
+		Z: a.Origin.Z,
 	}
 
 	pt.points3d[3] = gocv.Point3f{
 		X: pt.points3d[0].X,
 		Y: pt.points3d[2].Y,
-		Z: 0,
+		Z: a.Origin.Z,
 	}
 }
 
@@ -145,12 +145,17 @@ func (a *AprilTag) SetWorld3dPoints() {
 	}, 3, 3, gocv.MatTypeCV32FC1)
 	rotateMat.SetFloatAt(2, 2, 1)
 	pMod := float32(math.Sqrt(float64(p.X*p.X + p.Y*p.Y)))
-	cosTheta := p.X / pMod
-	sinTheta := p.Y / pMod
-	rotateMat.SetFloatAt(0, 0, cosTheta)
-	rotateMat.SetFloatAt(0, 1, -sinTheta)
-	rotateMat.SetFloatAt(1, 0, sinTheta)
-	rotateMat.SetFloatAt(1, 1, cosTheta)
+	if pMod != 0 {
+		cosTheta := p.X / pMod
+		sinTheta := p.Y / pMod
+		rotateMat.SetFloatAt(0, 0, cosTheta)
+		rotateMat.SetFloatAt(0, 1, -sinTheta)
+		rotateMat.SetFloatAt(1, 0, sinTheta)
+		rotateMat.SetFloatAt(1, 1, cosTheta)
+	} else {
+		rotateMat.SetFloatAt(0, 0, 1)
+		rotateMat.SetFloatAt(1, 1, 1)
+	}
 
 	for _, id := range a.Ids {
 		a.SetPoint3d(id)
@@ -164,22 +169,36 @@ func (a *AprilTag) SetWorld3dPoints() {
 				rotateMat.GetFloatAt(0, 2)*point.Z + a.Origin.X
 			point.Y = rotateMat.GetFloatAt(1, 0)*point.X + rotateMat.GetFloatAt(1, 1)*point.Y +
 				rotateMat.GetFloatAt(1, 2)*point.Z + a.Origin.Y
-			point.Z += a.Origin.Z
+			//point.Z += a.Origin.Z
 			tp.points3d[i] = point
 		}
 	}
 }
 
-func (a *AprilTag) GetCornerPoints() (pts2d []gocv.Point2f, pts3d []gocv.Point3f) {
-	pts2d = make([]gocv.Point2f, len(a.Ids)*4)
-	pts3d = make([]gocv.Point3f, len(a.Ids)*4)
+func (a *AprilTag) GetCornersPoints() (pts2dVec []gocv.Point2f, pts3dVec []gocv.Point3f) {
+	pts2dVec = make([]gocv.Point2f, len(a.Ids)*4)
+	pts3dVec = make([]gocv.Point3f, len(a.Ids)*4)
 	for i, id := range a.Ids {
 		corner := a.Corners[id]
-
 		for j := 0; j < 4; j++ {
-			pts2d[i*4+j] = corner.points[j]
-			pts3d[i*4+j] = corner.points3d[j]
+			pts2dVec[i*4+j] = corner.points[j]
+			pts3dVec[i*4+j] = corner.points3d[j]
 		}
 	}
-	return pts2d, pts3d
+	return pts2dVec, pts3dVec
+}
+
+func (a *AprilTag) GetCornerCenter(id int) gocv.Point2f {
+	center := gocv.Point2f{
+		X: 0,
+		Y: 0,
+	}
+	points := a.Corners[id].points
+	for i := 0; i < 4; i++ {
+		center.X += points[i].X
+		center.Y += points[i].Y
+	}
+	center.X /= 4
+	center.Y /= 4
+	return center
 }
