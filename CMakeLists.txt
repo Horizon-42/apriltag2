@@ -35,11 +35,9 @@ endif ()
 
 add_subdirectory(ethz_apriltag2)
 
-add_executable(${PROJECT_NAME} main.cpp detect_apriltag.cpp ndarray_converter.cpp ndarray_converter.h)
+#add_library(ApriltagsDetector SHARED AprilTagDetector.cpp AprilTagDetector.h ndarray_converter.cpp ndarray_converter.h)
 
-add_library(ApriltagsDetector SHARED AprilTagDetector.cpp AprilTagDetector.h ndarray_converter.cpp ndarray_converter.h)
-
-target_link_libraries(${PROJECT_NAME} ethz_apriltag2 ${OpenCV_LIBS})
-target_link_libraries(ApriltagsDetector ethz_apriltag2 ${PYTHON_LIBRARIES} ${OpenCV_LIBS})
-set_target_properties(ApriltagsDetector PROPERTIES PREFIX "")
+#target_link_libraries(${PROJECT_NAME} ethz_apriltag2 ${OpenCV_LIBS})
+#target_link_libraries(ApriltagsDetector ethz_apriltag2 ${PYTHON_LIBRARIES} ${OpenCV_LIBS})
+#set_target_properties(ApriltagsDetector PROPERTIES PREFIX "")
 set(LIBRARY_OUTPUT_PATH ../)
