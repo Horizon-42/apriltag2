@@ -12,9 +12,11 @@
 #include <opencv2/opencv.hpp>
 #include "apriltags/TagDetector.h"
 
-class TagDetector {
+class TagDetector
+{
     AprilTags::TagDetector *detector;
     AprilTags::TagCodes *tagCodes;
+
 public:
     TagDetector();
 
@@ -23,6 +25,10 @@ public:
     int CountTags(cv::Mat const &frame);
 
     bool DetectTags(cv::Mat const &frame, cv::Mat &points, cv::Mat &ids, bool draw);
+
+    bool is_blur(cv::Mat const &frame);
+
+private:
 };
 
 typedef cv::Mat *Mat;
@@ -37,7 +43,6 @@ typedef void *TagDetectorPtr;
 
 #ifdef __cplusplus
 
-
 extern "C"
 {
 #include "apriltags/Tag16h5.h"
@@ -47,20 +52,20 @@ extern "C"
 #include "apriltags/Tag36h11.h"
 #endif
 
-TagDetectorPtr NewTagDetector();
-void ReleaseTagDetector(TagDetectorPtr *detector);
-int CountTags(TagDetectorPtr detector, Mat frame);
-bool DetectTags(TagDetectorPtr detector, Mat frame, Mat points, Mat ids, bool draw);
-bool IsEmpty(TagDetectorPtr detector);
+    TagDetectorPtr NewTagDetector();
+    void ReleaseTagDetector(TagDetectorPtr *detector);
+    int CountTags(TagDetectorPtr detector, Mat frame);
+    bool DetectTags(TagDetectorPtr detector, Mat frame, Mat points, Mat ids, bool draw);
+    bool IsEmpty(TagDetectorPtr detector);
 
-bool Init();
+    bool Init();
 
-int HaveAprilTags(Mat frame);
+    int HaveAprilTags(Mat frame);
 
-void Close();
+    void Close();
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif //APRILTAG_DETECT_APRILTAG_H
+#endif // APRILTAG_DETECT_APRILTAG_H

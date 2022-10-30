@@ -52,7 +52,7 @@ add_subdirectory(ethz_apriltag2)
 # add_library(ApriltagsDetector SHARED AprilTagDetector.cpp AprilTagDetector.h ndarray_converter.cpp ndarray_converter.h)
 # if (EXISTS "C:/works/apriltag/main.cpp")
 # message("HAHA")
-ADD_EXECUTABLE(ApriltagTest main.cpp)
+ADD_EXECUTABLE(ApriltagTest main.cpp detect_apriltag.cpp)
 target_link_libraries(${PROJECT_NAME} ethz_apriltag2 ${OpenCV_LIBS})
 
 # endif ()

@@ -4,18 +4,20 @@
 
 #include "detect_apriltag.h"
 
-//#define DEBUG
+// #define DEBUG
 
 AprilTags::TagDetector *m_tagDetector(NULL);
 AprilTags::TagCodes *m_tagCodes(NULL);
 
-bool Init() {
+bool Init()
+{
     m_tagCodes = new AprilTags::TagCodes(AprilTags::tagCodes36h11);
     m_tagDetector = new AprilTags::TagDetector(*m_tagCodes);
     return true;
 }
 
-int HaveAprilTags(Mat frame) {
+int HaveAprilTags(Mat frame)
+{
     if ((*frame).empty())
         return 0;
     cv::Mat image_gray;
@@ -31,28 +33,46 @@ int HaveAprilTags(Mat frame) {
     return count;
 }
 
-void Close() {
+void Close()
+{
     delete m_tagDetector, m_tagCodes;
 }
 
-TagDetector::TagDetector() {
+bool TagDetector::is_blur(cv::Mat const &frame)
+{
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    cv::Mat lap;
+    cv::Laplacian(gray, lap, CV_64F);
+    cv::Scalar mu, sigma;
+    cv::meanStdDev(lap, mu, sigma);
+    double focusMeasure = sigma.val[0] * sigma.val[0];
+    return focusMeasure < 490.0;
+}
+
+TagDetector::TagDetector()
+{
     tagCodes = new AprilTags::TagCodes(AprilTags::tagCodes36h11);
     detector = new AprilTags::TagDetector(*tagCodes);
 }
 
-TagDetector::~TagDetector() {
-    if (detector != NULL) {
+TagDetector::~TagDetector()
+{
+    if (detector != NULL)
+    {
         delete detector;
         detector = NULL;
     }
-    if (tagCodes != NULL) {
+    if (tagCodes != NULL)
+    {
         delete tagCodes;
         tagCodes = NULL;
     }
 }
 
-int TagDetector::CountTags(const cv::Mat &frame) {
-    if (frame.empty())
+int TagDetector::CountTags(const cv::Mat &frame)
+{
+    if (frame.empty() || this->is_blur(frame))
         return 0;
     cv::Mat image_gray;
     if (frame.channels() == 3)
@@ -67,8 +87,9 @@ int TagDetector::CountTags(const cv::Mat &frame) {
     return count;
 }
 
-bool TagDetector::DetectTags(const cv::Mat &frame, cv::Mat &points, cv::Mat &ids, bool draw) {
-    if (frame.empty())
+bool TagDetector::DetectTags(const cv::Mat &frame, cv::Mat &points, cv::Mat &ids, bool draw)
+{
+    if (frame.empty() || this->is_blur(frame))
         return false;
     cv::Mat image_gray;
     if (frame.channels() == 3)
@@ -76,31 +97,36 @@ bool TagDetector::DetectTags(const cv::Mat &frame, cv::Mat &points, cv::Mat &ids
     else
         image_gray = frame.clone();
     vector<AprilTags::TagDetection> detections = detector->extractTags(image_gray);
-//    std::cout<<detections.size()<<"\n";
+    //    std::cout<<detections.size()<<"\n";
 
     bool ret = false;
-    if (detections.size() > 0) {
+    if (detections.size() > 0)
+    {
         points = cv::Mat(detections.size() * 4, 2, CV_32F);
         ids = cv::Mat(detections.size(), 1, CV_32S);
-        for (int i = 0; i < detections.size(); ++i) {
-            for (int j = 0; j < 4; ++j) {
+        for (int i = 0; i < detections.size(); ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
                 points.at<float>(i * 4 + j, 0) = detections[i].p[j].first;
                 points.at<float>(i * 4 + j, 1) = detections[i].p[j].second;
             }
             ids.at<int>(i, 0) = detections[i].id;
         }
 
-//        // 计算亚像素角点
-//        try {
-//            cv::cornerSubPix(image_gray, points, {5, 5}, {-1, -1},
-//                             cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER,
-//                                              40, 0.001));
-//        } catch (std::exception const &e) {
-//            std::cout << "sub pix corners calculate failed, " << e.what() << ".\n";
-//        }
+        //        // 计算亚像素角点
+        //        try {
+        //            cv::cornerSubPix(image_gray, points, {5, 5}, {-1, -1},
+        //                             cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER,
+        //                                              40, 0.001));
+        //        } catch (std::exception const &e) {
+        //            std::cout << "sub pix corners calculate failed, " << e.what() << ".\n";
+        //        }
 
-        if (draw) {
-            for (int i = 0; i < detections.size(); ++i) {
+        if (draw)
+        {
+            for (int i = 0; i < detections.size(); ++i)
+            {
                 cv::circle(frame, {int(detections[i].cxy.first), int(detections[i].cxy.second)}, 3,
                            {0, 255, 0}, -1);
                 cv::circle(frame, {int(detections[i].p[0].first), int(detections[i].p[0].second)}, 3,
@@ -122,25 +148,31 @@ bool TagDetector::DetectTags(const cv::Mat &frame, cv::Mat &points, cv::Mat &ids
     return ret;
 }
 
-TagDetectorPtr NewTagDetector() {
+TagDetectorPtr NewTagDetector()
+{
     return new TagDetector;
 }
 
-void ReleaseTagDetector(TagDetectorPtr *detector) {
-    if (*detector != NULL) {
+void ReleaseTagDetector(TagDetectorPtr *detector)
+{
+    if (*detector != NULL)
+    {
         delete (*detector);
         *detector = NULL;
     }
 }
 
-int CountTags(TagDetectorPtr detector, Mat frame) {
+int CountTags(TagDetectorPtr detector, Mat frame)
+{
     return detector->CountTags(*frame);
 }
 
-bool DetectTags(TagDetectorPtr detector, Mat frame, Mat points, Mat ids, bool draw) {
+bool DetectTags(TagDetectorPtr detector, Mat frame, Mat points, Mat ids, bool draw)
+{
     return detector->DetectTags(*frame, *points, *ids, draw);
 }
 
-bool IsEmpty(TagDetectorPtr detector) {
+bool IsEmpty(TagDetectorPtr detector)
+{
     return detector == NULL;
 }
